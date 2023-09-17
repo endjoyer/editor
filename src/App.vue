@@ -56,9 +56,11 @@ export default {
   },
   methods: {
     updateHistory() {
-      if (this.$refs.editor.lastChild.nodeName !== 'DIV') {
-        this.history.push(this.$refs.editor.innerHTML);
-        this.historyIndex++;
+      if (this.$refs.editor.lastChild) {
+        if (this.$refs.editor.lastChild.nodeName !== 'DIV') {
+          this.history.push(this.$refs.editor.innerHTML);
+          this.historyIndex++;
+        }
       }
     },
     undo() {
@@ -130,19 +132,25 @@ export default {
 @import './assets/normalize.css';
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap');
 
+#app {
+  background: #1e1e1e;
+}
+
 .app {
   font-family: 'Roboto', Arial, sans-serif;
   font-style: normal;
   font-weight: 400;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   background-color: #1e1e1e;
   color: #eaeaea;
   height: 100vh;
-  width: 100vw;
+  max-width: 880px;
   padding: 87px 107px 107px 107px;
   box-sizing: border-box;
   overflow: auto;
+  margin: 0 auto;
 }
 
 .buttons {
