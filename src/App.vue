@@ -12,20 +12,26 @@
       contenteditable="true"
       ref="editor"
       @input="updateHistory"
+      @keydown.tab.prevent="insertTab"
       class="editor"
     ></div>
     <div v-if="showModal" class="modal">
       <div class="modal-content">
         <span class="close" @click="closeModal">&times;</span>
-        <input
-          v-model="imageUrl"
-          @keyup.enter="insertImage"
-          placeholder="Введите URL изображения"
-        />
-        <button class="btn" :disabled="!isValidUrl" @click="insertImage">
+        <p class="modal__title">Введите URL изображения</p>
+        <label class="modal__label">
+          <input
+            class="modal__input"
+            v-model="imageUrl"
+            @keyup.enter="insertImage"
+          />
+          <span v-if="imageUrl && !isValidUrl" class="error">
+            URL изображения не валиден
+          </span>
+        </label>
+        <button class="submit" :disabled="!isValidUrl" @click="insertImage">
           Добавить
         </button>
-        <p v-if="!isValidUrl" class="error">URL изображения не валиден</p>
       </div>
     </div>
   </div>
@@ -50,8 +56,10 @@ export default {
   },
   methods: {
     updateHistory() {
-      this.history.push(this.$refs.editor.innerHTML);
-      this.historyIndex++;
+      if (this.$refs.editor.lastChild.nodeName !== 'DIV') {
+        this.history.push(this.$refs.editor.innerHTML);
+        this.historyIndex++;
+      }
     },
     undo() {
       if (this.historyIndex > 0) {
@@ -80,7 +88,9 @@ export default {
     },
     insertImage() {
       if (this.isValidUrl) {
-        this.restoreRange(this.savedRange);
+        if (this.savedRange) {
+          this.restoreRange(this.savedRange);
+        }
         document.execCommand(
           'insertHTML',
           false,
@@ -109,31 +119,43 @@ export default {
       sel.removeAllRanges();
       sel.addRange(range);
     },
+    insertTab() {
+      document.execCommand('insertHTML', false, '&nbsp;&nbsp;&nbsp;&nbsp;');
+    },
   },
 };
 </script>
 
-<style scoped>
+<style>
 @import './assets/normalize.css';
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap');
 
 .app {
   font-family: 'Roboto', Arial, sans-serif;
+  font-style: normal;
+  font-weight: 400;
   display: flex;
   flex-direction: column;
   background-color: #1e1e1e;
   color: #eaeaea;
   height: 100vh;
   width: 100vw;
-  padding: 77px 107px 107px 107px;
+  padding: 87px 107px 107px 107px;
   box-sizing: border-box;
   overflow: auto;
 }
 
 .buttons {
+  position: fixed;
+  top: 40px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #1c1c1c;
   display: flex;
   gap: 12px;
   align-items: center;
+  padding: 10px;
+  border-radius: 10px;
 }
 
 .btn {
@@ -143,10 +165,7 @@ export default {
   outline: none;
   border-radius: 4px;
   color: #639eff;
-  font-family: Roboto;
   font-size: 15px;
-  font-style: normal;
-  font-weight: 400;
   line-height: 23px;
   background: #1e1e1e;
   cursor: pointer;
@@ -154,6 +173,11 @@ export default {
 
 .btn:hover {
   opacity: 0.8;
+  transition: all 0.3s ease 0s;
+}
+
+.btn:active {
+  opacity: 1;
 }
 
 .btn_undo {
@@ -172,32 +196,32 @@ export default {
   background: url('./assets/img/modal.svg') 0 0 no-repeat;
 }
 .btn_html {
-  width: fit-content;
+  width: max-content;
   height: fit-content;
+  font-size: 15px;
+  line-height: 23px;
 }
 .editor {
   width: 100%;
   flex-grow: 1;
   overflow: visible;
   outline: none;
+  font-size: 15px;
+  line-height: 23px;
 }
 
-.editor > img {
+.editor img {
   max-width: 100%;
   max-height: 100%;
 }
 
-.editor > h1 {
+.editor h1 {
   font-size: 31px;
-  font-weight: 400;
-  line-height: 23px;
+  line-height: 35px;
+  margin: 15px 0;
 }
 
-.editor > p {
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 23px;
-  height: 100%;
+.editor p {
   margin: 0;
 }
 
@@ -216,17 +240,72 @@ export default {
 }
 
 .modal-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  border-radius: 20px;
   background-color: #282828;
+  width: 400px;
+  min-height: 200px;
   margin: auto;
   padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
+  position: relative;
+}
+
+.modal__title {
+  font-size: 19px;
+  line-height: 26px;
+  margin: 10px 0 15px 0;
+}
+
+.modal__label {
+  display: block;
+  min-height: 60px;
+}
+
+.modal__input {
+  color: #eaeaea;
+  background-color: #282828;
+  display: block;
+  width: 100%;
+  font-size: 16px;
+  line-height: 26px;
+  border: none;
+  outline: none;
+  border-bottom: 1px solid rgba(213, 213, 213, 0.133);
+}
+.modal__input:focus {
+  border-bottom: 1px solid rgba(217, 217, 217, 0.227);
+}
+
+.error {
+  margin: 15px 0 0 0;
+  color: rgb(191, 20, 20);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.submit {
+  margin: 0;
+  padding: 10px 30px;
+  font-size: 18px;
+  line-height: 26px;
+  border: none;
+  outline: none;
+  border-radius: 7px;
+  color: #639eff;
+  background: #1e1e1e;
+  cursor: pointer;
 }
 
 .close {
+  position: absolute;
+  right: -25px;
+  top: -25px;
   color: #eaeaea;
   float: right;
-  font-size: 28px;
+  font-size: 35px;
   font-weight: bold;
 }
 
@@ -237,7 +316,19 @@ export default {
   opacity: 0.8;
 }
 
-.error {
-  color: red;
+.close:active {
+  opacity: 1;
+}
+
+@media (max-width: 600px) {
+  .app {
+    padding: 79px 20px 20px 20px;
+  }
+
+  .btn_html {
+    width: min-content;
+    font-size: 13px;
+    line-height: 17px;
+  }
 }
 </style>
