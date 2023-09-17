@@ -1,12 +1,18 @@
 <template>
   <div class="app">
-    <div class="buttons">
-      <button class="btn btn_undo" @click="undo"></button>
-      <button class="btn btn_redo" @click="redo"></button>
-      <button class="btn btn_header" @click="makeHeader"></button>
-      <button class="btn btn_paragraph" @click="makeParagraph"></button>
-      <button class="btn btn_modal" @click="openModal"></button>
-      <button class="btn btn_html" @click="copyHtml">Скопировать HTML</button>
+    <div class="panel">
+      <div class="buttons">
+        <button class="btn btn_undo" @click="undo"></button>
+        <button class="btn btn_redo" @click="redo"></button>
+        <button class="btn btn_header" @click="makeHeader"></button>
+        <button class="btn btn_paragraph" @click="makeParagraph"></button>
+        <button class="btn btn_modal" @click="openModal"></button>
+        <button class="btn btn_text" @click="copyHtml">Скопировать HTML</button>
+      </div>
+      <div class="buttons">
+        <button class="btn btn_text" @click="saveToCache">Сохранить</button>
+        <button class="btn btn_text" @click="clearCache">Очистить</button>
+      </div>
     </div>
     <div
       contenteditable="true"
@@ -124,6 +130,18 @@ export default {
     insertTab() {
       document.execCommand('insertHTML', false, '&nbsp;&nbsp;&nbsp;&nbsp;');
     },
+    saveToCache() {
+      localStorage.setItem('editorContent', this.$refs.editor.innerHTML);
+    },
+    clearCache() {
+      localStorage.removeItem('editorContent');
+      this.$refs.editor.innerHTML = '';
+    },
+  },
+  mounted() {
+    if (localStorage.getItem('editorContent')) {
+      this.$refs.editor.innerHTML = localStorage.getItem('editorContent');
+    }
   },
 };
 </script>
@@ -146,24 +164,27 @@ export default {
   background-color: #1e1e1e;
   color: #eaeaea;
   height: 100vh;
-  max-width: 880px;
-  padding: 87px 107px 107px 107px;
+  max-width: 1080px;
+  padding: 125px 100px 100px 100px;
   box-sizing: border-box;
   overflow: auto;
   margin: 0 auto;
 }
 
-.buttons {
+.panel {
   position: fixed;
-  top: 40px;
+  top: 55px;
   left: 50%;
   transform: translate(-50%, -50%);
   background-color: #1c1c1c;
+  border-radius: 10px;
+}
+
+.buttons {
   display: flex;
   gap: 12px;
   align-items: center;
   padding: 10px;
-  border-radius: 10px;
 }
 
 .btn {
@@ -203,7 +224,7 @@ export default {
 .btn_modal {
   background: url('./assets/img/modal.svg') 0 0 no-repeat;
 }
-.btn_html {
+.btn_text {
   width: max-content;
   height: fit-content;
   font-size: 15px;
@@ -330,10 +351,10 @@ export default {
 
 @media (max-width: 600px) {
   .app {
-    padding: 79px 20px 20px 20px;
+    padding: 125px 20px 20px 20px;
   }
 
-  .btn_html {
+  .btn_text {
     width: min-content;
     font-size: 13px;
     line-height: 17px;
