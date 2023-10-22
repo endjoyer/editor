@@ -189,23 +189,6 @@ export default {
   margin: 0 auto;
 }
 
-/* .app {
-  font-family: 'Roboto', Arial, sans-serif;
-  font-style: normal;
-  font-weight: 400;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  background-color: #1e1e1e;
-  color: #eaeaea;
-  height: 100vh;
-  max-width: 1080px;
-  padding: 125px 100px 100px 100px;
-  box-sizing: border-box;
-  overflow: auto;
-  margin: 0 auto;
-} */
-
 .panel {
   position: fixed;
   top: 55px;
@@ -396,14 +379,17 @@ export default {
 }
 
 @media (max-width: 600px) {
-  .app {
+  #app {
     padding: 125px 20px 20px 20px;
   }
 
+  .buttons {
+    gap: 8px;
+  }
   .btn_text {
     width: min-content;
-    font-size: 13px;
-    line-height: 17px;
+    font-size: 12px;
+    line-height: 15px;
   }
 }
 </style>
