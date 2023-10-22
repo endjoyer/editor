@@ -1,49 +1,48 @@
 <template>
-  <div class="app">
-    <div class="panel">
-      <div class="buttons">
-        <button class="btn btn_undo" @click="undo"></button>
-        <button class="btn btn_redo" @click="redo"></button>
-        <button class="btn btn_header" @click="makeHeader"></button>
-        <button class="btn btn_paragraph" @click="makeParagraph"></button>
-        <button class="btn btn_modal" @click="openModal"></button>
-        <button class="btn btn_text" @click="copyHtml">Скопировать HTML</button>
-      </div>
-      <div class="buttons">
-        <button class="btn btn_text" @click="saveToCache">Сохранить</button>
-        <button class="btn btn_text" @click="clearCache">Очистить</button>
-      </div>
+  <div class="panel">
+    <div class="buttons">
+      <button class="btn btn_undo" @click="undo"></button>
+      <button class="btn btn_redo" @click="redo"></button>
+      <button class="btn btn_header" @click="makeHeader"></button>
+      <button class="btn btn_paragraph" @click="makeParagraph"></button>
+      <button class="btn btn_modal" @click="openModal"></button>
+      <button class="btn btn_text" @click="copyHtml">Скопировать HTML</button>
     </div>
-    <div
-      contenteditable="true"
-      ref="editor"
-      @input="updateHistory"
-      @keydown.tab.prevent="insertTab"
-      class="editor"
-    ></div>
-    <div v-if="showModal" class="modal">
-      <div class="modal-content">
-        <span class="close" @click="closeModal">&times;</span>
-        <p class="modal__title">Введите URL изображения</p>
-        <label class="modal__label">
-          <input
-            class="modal__input"
-            v-model="imageUrl"
-            @keyup.enter="insertImage"
-          />
-          <span v-if="imageUrl && !isValidUrl" class="error">
-            URL изображения не валиден
-          </span>
-        </label>
-        <button class="submit" :disabled="!isValidUrl" @click="insertImage">
-          Добавить
-        </button>
-      </div>
+    <div class="buttons">
+      <button class="btn btn_text" @click="saveToCache">Сохранить</button>
+      <button class="btn btn_text" @click="clearCache">Очистить</button>
+    </div>
+  </div>
+  <div
+    contenteditable="true"
+    ref="editor"
+    @input="updateHistory"
+    @keydown.tab.prevent="insertTab"
+    class="editor"
+  ></div>
+  <div v-if="showModal" class="modal">
+    <div class="modal-content">
+      <span class="close" @click="closeModal">&times;</span>
+      <p class="modal__title">Введите URL изображения</p>
+      <label class="modal__label">
+        <input
+          class="modal__input"
+          v-model="imageUrl"
+          @keyup.enter="insertImage"
+        />
+        <span v-if="imageUrl && !isValidUrl" class="error">
+          URL изображения не валиден
+        </span>
+      </label>
+      <button class="submit" :disabled="!isValidUrl" @click="insertImage">
+        Добавить
+      </button>
     </div>
   </div>
 </template>
 
 <script>
+import interact from 'interactjs';
 export default {
   data() {
     return {
@@ -102,11 +101,33 @@ export default {
         document.execCommand(
           'insertHTML',
           false,
-          '<img src="' + this.imageUrl + '">'
+          '<img class="resizable" src="' + this.imageUrl + '">'
         );
         this.imageUrl = '';
         this.closeModal();
+        this.initResizable();
       }
+    },
+    initResizable() {
+      this.$nextTick(() => {
+        interact('.resizable')
+          .resizable({
+            edges: { left: false, right: true, bottom: true, top: false },
+          })
+          .on('resizemove', function (event) {
+            var target = event.target;
+
+            target.style.width = event.rect.width + 'px';
+            target.style.height = event.rect.height + 'px';
+
+            if (event.deltaRect.left !== 0) {
+              target.style.left = event.rect.left + 'px';
+            }
+            if (event.deltaRect.top !== 0) {
+              target.style.top = event.rect.top + 'px';
+            }
+          });
+      });
     },
     copyHtml() {
       try {
@@ -152,9 +173,23 @@ export default {
 
 #app {
   background: #1e1e1e;
+  font-family: 'Roboto', Arial, sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  background-color: #1e1e1e;
+  color: #eaeaea;
+  min-height: 100vh;
+
+  padding: 125px 100px 100px 100px;
+  box-sizing: border-box;
+  overflow: auto;
+  margin: 0 auto;
 }
 
-.app {
+/* .app {
   font-family: 'Roboto', Arial, sans-serif;
   font-style: normal;
   font-weight: 400;
@@ -169,7 +204,7 @@ export default {
   box-sizing: border-box;
   overflow: auto;
   margin: 0 auto;
-}
+} */
 
 .panel {
   position: fixed;
@@ -198,11 +233,11 @@ export default {
   line-height: 23px;
   background: #1e1e1e;
   cursor: pointer;
+  transition: all 0.3s ease 0s;
 }
 
 .btn:hover {
   opacity: 0.8;
-  transition: all 0.3s ease 0s;
 }
 
 .btn:active {
@@ -231,12 +266,18 @@ export default {
   line-height: 23px;
 }
 .editor {
+  box-sizing: border-box;
   width: 100%;
   flex-grow: 1;
   overflow: visible;
   outline: none;
   font-size: 15px;
   line-height: 23px;
+  background: rgba(184, 167, 83, 0.4) 0 0 no-repeat;
+  padding: 30px;
+  max-width: 1080px;
+  margin: 0 auto;
+  border-radius: 10px;
 }
 
 .editor img {
@@ -326,6 +367,11 @@ export default {
   color: #639eff;
   background: #1e1e1e;
   cursor: pointer;
+  transition: all 0.25s ease 0s;
+}
+
+.submit:hover {
+  opacity: 0.8;
 }
 
 .close {
